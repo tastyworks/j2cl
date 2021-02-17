@@ -704,6 +704,28 @@ public final class String implements Comparable<String>, CharSequence,
     return start > 0 || end < length ? substring(start, end) : this;
   }
 
+  public static String format(String format, Object... args) {
+    StringBuilder sb = new StringBuilder();
+
+    int lastIndex = 0;
+    int argIndex = 0;
+    int i = format.indexOf("%");
+    while (i > 0) {
+      sb.append(format.substring(lastIndex, i));
+      sb.append(args[argIndex++]);
+      lastIndex = i + 1;
+      if (lastIndex >= format.length()) {
+        return sb.toString();
+      }
+
+      i = format.indexOf("%", lastIndex);
+    }
+
+    sb.append(format.substring(lastIndex));
+
+    return sb.toString();
+  }
+
   @JsType(isNative = true, name = "String", namespace = JsPackage.GLOBAL)
   private static class NativeString {
     public static native String fromCharCode(char x);
