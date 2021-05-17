@@ -132,6 +132,11 @@ public class EnumSet<E extends Enum<E>> extends AbstractSet<E> {
   }
 
   public static <E extends Enum<E>> EnumSet<E> allOf(Class<E> elementType) {
-    throw new UnsupportedOperationException();
+    E[] constants = elementType.getEnumConstants();
+    EnumSet<E> enumSet = new EnumSet();
+    for (E element : constants) {
+      enumSet.add(element);
+    }
+    return enumSet;
   }
 }
