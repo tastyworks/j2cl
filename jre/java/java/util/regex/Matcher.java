@@ -1,5 +1,8 @@
 package java.util.regex;
 
+import javaemul.internal.NativeRegExp;
+
+
 public final class Matcher implements MatcherResult {
 
   public static String quoteReplacement(String s) {
@@ -10,12 +13,15 @@ public final class Matcher implements MatcherResult {
 
   private final CharSequence input;
 
-  private final String[] matchResult;
+  private NativeRegExp.Match matchResult;
 
-  Matcher(Pattern pattern, CharSequence input, String[] matchResult) {
+  private int prevOffset;
+
+  private int offset;
+
+  Matcher(Pattern pattern, CharSequence input) {
     this.pattern = pattern;
     this.input = input;
-    this.matchResult = matchResult;
   }
 
   public Pattern pattern() {
@@ -41,8 +47,10 @@ public final class Matcher implements MatcherResult {
 
   @Override
   public int start(int group) {
+    String wholeGroup = group();
     String groupMatch = group(group);
-    return input.toString().indexOf(groupMatch);
+    int matchIndex = wholeGroup.indexOf(groupMatch);
+    return prevOffset + matchResult.getIndex() + matchIndex;
   }
 
   @Override
@@ -52,9 +60,10 @@ public final class Matcher implements MatcherResult {
 
   @Override
   public int end(int group) {
+    String wholeGroup = group();
     String groupMatch = group(group);
-    int startIndex = input.toString().indexOf(groupMatch);
-    return startIndex + groupMatch.length();
+    int matchEndIndex = wholeGroup.indexOf(groupMatch) + groupMatch.length();
+    return prevOffset + matchResult.getIndex() + matchEndIndex;
   }
 
   @Override
@@ -64,7 +73,7 @@ public final class Matcher implements MatcherResult {
 
   @Override
   public String group(int group) {
-    return matchResult[group];
+    return matchResult.asArray()[group];
   }
 
   public String group(String name) {
@@ -72,19 +81,33 @@ public final class Matcher implements MatcherResult {
   }
 
   public int groupCount() {
-    return null == matchResult ? 0 : matchResult.length - 1;
+    return null == matchResult ? 0 : matchResult.asArray().length - 1;
   }
 
+  // set match result, but do not advance offsets
   public boolean matches() {
+    matchResult = exec(input);
     return matchResult != null;
   }
 
   public boolean find() {
-    return null != matchResult;
+    CharSequence targetSequence = input.subSequence(offset, input.length());
+    matchResult = exec(targetSequence);
+
+    boolean isDone = matchResult == null;
+    if (!isDone) {
+      prevOffset = offset;
+      offset += matchResult.getIndex() + group().length();
+    }
+    return !isDone;
   }
 
   public boolean find(int offset) {
     throw new UnsupportedOperationException();
+  }
+
+  private NativeRegExp.Match exec(CharSequence sequence) {
+    return pattern.nativeRegExp.exec(sequence.toString());
   }
 
   public boolean lookingAt() {
