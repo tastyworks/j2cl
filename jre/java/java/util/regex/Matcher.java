@@ -73,7 +73,7 @@ public final class Matcher implements MatcherResult {
 
   @Override
   public String group(int group) {
-    return matchResult.asArray()[group];
+    return matchResult.getAt(group);
   }
 
   public String group(String name) {
@@ -81,7 +81,7 @@ public final class Matcher implements MatcherResult {
   }
 
   public int groupCount() {
-    return null == matchResult ? 0 : matchResult.asArray().length - 1;
+    return null == matchResult ? 0 : matchResult.getLength() - 1;
   }
 
   // set match result, but do not advance offsets
