@@ -39,6 +39,9 @@ public class EnumSet<E extends Enum<E>> extends AbstractSet<E> implements Clonea
 
   @Override
   public boolean contains(Object o) {
+    if (null == o) {
+        return false;
+    }
     return map.containsKey(o);
   }
 
