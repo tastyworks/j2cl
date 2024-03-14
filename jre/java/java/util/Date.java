@@ -18,6 +18,7 @@ package java.util;
 import java.io.Serializable;
 
 import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
@@ -296,6 +297,11 @@ public class Date implements Cloneable, Comparable<Date>, Serializable {
       // We are not in the duplicated hour, so revert the change.
       jsdate.setTime(originalTimeInMillis);
     }
+  }
+
+  @JsProperty
+  public NativeDate getJsdate() {
+      return jsdate;
   }
 
   @JsType(isNative = true, name = "Date", namespace = JsPackage.GLOBAL)
