@@ -13,9 +13,63 @@ def setup_j2cl_workspace(**kwargs):
 
     versions.check("5.4.0")  # The version J2CL currently have a CI setup for.
 
+    # Use system zlib to avoid macOS SDK compatibility issues
     rules_closure_dependencies(
         omit_com_google_auto_common = True,
+        omit_zlib = True,
         **kwargs
+    )
+
+    # Add compatible zlib version with custom BUILD file
+    http_archive(
+        name = "zlib",
+        build_file_content = """
+cc_library(
+    name = "zlib",
+    srcs = [
+        "adler32.c",
+        "compress.c",
+        "crc32.c",
+        "deflate.c",
+        "gzclose.c",
+        "gzlib.c",
+        "gzread.c",
+        "gzwrite.c",
+        "inflate.c",
+        "infback.c",
+        "inftrees.c",
+        "inffast.c",
+        "trees.c",
+        "uncompr.c",
+        "zutil.c",
+    ],
+    hdrs = [
+        "crc32.h",
+        "deflate.h",
+        "gzguts.h",
+        "inffast.h",
+        "inffixed.h",
+        "inflate.h",
+        "inftrees.h",
+        "trees.h",
+        "zconf.h",
+        "zlib.h",
+        "zutil.h",
+    ],
+    copts = [
+        "-Wno-macro-redefined",
+        "-Wno-deprecated-non-prototype",
+        "-DHAVE_UNISTD_H",
+        "-DZ_HAVE_UNISTD_H",
+        "-Dfdopen=fdopen_not_available_on_darwin",
+    ],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)
+        """,
+        sha256 = "b5b06d60ce49c8ba700e0ba517fa07de80b5d4628a037f4be8ad16955be7a7c0",
+        strip_prefix = "zlib-1.3",
+        urls = ["https://github.com/madler/zlib/archive/refs/tags/v1.3.tar.gz"],
     )
 
     jvm_maven_import_external(
